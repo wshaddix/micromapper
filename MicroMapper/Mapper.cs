@@ -24,7 +24,7 @@ namespace MicroMapper
             // get a list of properties from the source object
             var bindingFlags = BindingFlags.Public | BindingFlags.Instance;
 
-            if (_options.ReadNonPublicPropertiesOnSource)
+            if (!_options.MapOnlyPublicPropertiesFromSource)
             {
                 bindingFlags = bindingFlags | BindingFlags.NonPublic;
             }
@@ -33,6 +33,9 @@ namespace MicroMapper
 
             // get a list of properties from the destination object
             var destinationProperties = _destination.GetType().GetTypeInfo().GetProperties();
+
+            // filter out any destination properties that should be ignored
+            destinationProperties = destinationProperties.Where(p => !_options.IgnoredProperties.Contains(p.Name)).ToArray();
 
             // for each property of destination that exists on source set the value on destination
             foreach (var property in destinationProperties)
@@ -49,6 +52,19 @@ namespace MicroMapper
             }
         }
 
+        public Mapper<TSource, TDestination> Ignore<TPropertyType>(Expression<Func<TDestination, TPropertyType>> destinationProperty)
+        {
+            var destinationPropertyName = GetPropertyName(destinationProperty);
+            _options.IgnoredProperties.Add(destinationPropertyName);
+            return this;
+        }
+
+        public Mapper<TSource, TDestination> MapOnlyPublicPropertiesFromSource()
+        {
+            _options.MapOnlyPublicPropertiesFromSource = true;
+            return this;
+        }
+
         public Mapper<TSource, TDestination> MapProperty<TPropertyType>(Expression<Func<TDestination, TPropertyType>> destinationProperty, Expression<Func<TSource, TPropertyType>> valueExpression)
         {
             // we need to capture the destination property that this is for and the expression to run to get the value
@@ -63,47 +79,35 @@ namespace MicroMapper
             return this;
         }
 
-        public Mapper<TSource, TDestination> ReadNonPublicPropertiesOnSource()
-        {
-            _options.ReadNonPublicPropertiesOnSource = true;
-            return this;
-        }
-
         private string GetPropertyName<TPropertyType>(Expression<Func<TDestination, TPropertyType>> propertyLambda)
         {
-            Type type = typeof(TDestination);
+            var type = typeof(TDestination);
 
-            MemberExpression member = propertyLambda.Body as MemberExpression;
+            var member = propertyLambda.Body as MemberExpression;
             if (member == null)
-                throw new ArgumentException(string.Format(
-                    "Expression '{0}' refers to a method, not a property.",
-                    propertyLambda.ToString()));
+                throw new ArgumentException($"Expression '{propertyLambda}' refers to a method, not a property.");
 
-            PropertyInfo propInfo = member.Member as PropertyInfo;
+            var propInfo = member.Member as PropertyInfo;
             if (propInfo == null)
-                throw new ArgumentException(string.Format(
-                    "Expression '{0}' refers to a field, not a property.",
-                    propertyLambda.ToString()));
+                throw new ArgumentException($"Expression '{propertyLambda}' refers to a field, not a property.");
 
             if (type != propInfo.ReflectedType &&
                 !type.IsSubclassOf(propInfo.ReflectedType))
-                throw new ArgumentException(string.Format(
-                    "Expresion '{0}' refers to a property that is not from type {1}.",
-                    propertyLambda.ToString(),
-                    type));
+                throw new ArgumentException($"Expresion '{propertyLambda}' refers to a property that is not from type {type}.");
 
             return propInfo.Name;
         }
 
         private class MapperOptions
         {
+            internal List<string> IgnoredProperties { get; set; }
+            internal bool MapOnlyPublicPropertiesFromSource { get; set; }
             internal Dictionary<string, object> PropertyMaps { get; set; }
-
-            internal bool ReadNonPublicPropertiesOnSource { get; set; }
 
             public MapperOptions()
             {
                 PropertyMaps = new Dictionary<string, object>();
+                IgnoredProperties = new List<string>();
             }
         }
     }
