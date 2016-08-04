@@ -36,7 +36,7 @@ var customer = new Customer // <-- This is an internally scoped class
 
 var customerVm = new CustomerViewModel(); // <-- This is a publicly scoped class
 
-var mapper = new Mapper<CustomerInternal, CustomerViewModel>(customer, customerVm);
+var mapper = new Mapper<Customer, CustomerViewModel>(customer, customerVm);
 mapper.Execute();
 
 // customerVm now has the same property values as Customer
@@ -114,7 +114,7 @@ var customer = new Customer // <-- This is an internally scoped class
 
 var customerVm = new CustomerViewModel(); // <-- This is a publicly scoped class
 
-var mapper = new Mapper<CustomerInternal, CustomerViewModel>(customer, customerVm);
+var mapper = new Mapper<Customer, CustomerViewModel>(customer, customerVm);
 mapper
 	.MapOnlyPublicPropertiesFromSource() // <-- only public properties of the Customer will be mapped onto the CustomerVm
 	.Execute();
