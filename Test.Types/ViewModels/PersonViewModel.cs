@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MicroMapper.Tests.ViewModels
+namespace Test.Types.ViewModels
 {
     public class PersonViewModel
     {

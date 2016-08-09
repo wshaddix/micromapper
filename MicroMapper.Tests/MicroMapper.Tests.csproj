@@ -60,20 +60,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DomainTypes\CustomerInternal.cs" />
-    <Compile Include="DomainTypes\Customer.cs" />
     <Compile Include="Mapper.Tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ViewModels\CustomerViewModel.cs" />
-    <Compile Include="ViewModels\PersonViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MicroMapper\MicroMapper.csproj">
       <Project>{8a4a7e54-06ce-43f4-aaa1-5c8f2546ecf0}</Project>
       <Name>MicroMapper</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Test.Types\Test.Types.csproj">
+      <Project>{552ca278-286f-4f2f-b193-6374c6c2b0b0}</Project>
+      <Name>Test.Types</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="JsonDocs\customer.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

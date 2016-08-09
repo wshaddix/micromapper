@@ -1,8 +1,0 @@
-﻿{
-  "firstName": "Test First",
-  "lastName": "Test Last",
-  "ageInYears": 33,
-  "isPreferredMember": true,
-  "nickNames": [ "alias1", "alias2", "alias3" ],
-  "createdOnUtc": "8/1/2016"
-}

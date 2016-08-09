@@ -91,7 +91,7 @@ customerVm.FirstName = "First should be ignored";
 var mapper = new Mapper<Customer, CustomerViewModel>(customer, customerVm);
 
 mapper
-    .MapOnlyPublicPropertiesFromSource()
+    .ReadOnlyPublicPropertiesFromSource()
     .Ignore(vm => vm.AgeInYears)
     .Ignore(vm => vm.FirstName)
     .Execute();
@@ -116,7 +116,7 @@ var customerVm = new CustomerViewModel(); // <-- This is a publicly scoped class
 
 var mapper = new Mapper<Customer, CustomerViewModel>(customer, customerVm);
 mapper
-	.MapOnlyPublicPropertiesFromSource() // <-- only public properties of the Customer will be mapped onto the CustomerVm
+	.ReadOnlyPublicPropertiesFromSource() // <-- only public properties of the Customer will be mapped onto the CustomerVm
 	.Execute();
 
 // customerVm now has the same property values as Customer

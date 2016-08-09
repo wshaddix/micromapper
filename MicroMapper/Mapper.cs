@@ -8,9 +8,9 @@ namespace MicroMapper
 {
     public class Mapper<TSource, TDestination>
     {
-        private TDestination _destination;
-        private MapperOptions _options;
-        private TSource _source;
+        private readonly TDestination _destination;
+        private readonly MapperOptions _options;
+        private readonly TSource _source;
 
         public Mapper(TSource source, TDestination destination)
         {
@@ -22,17 +22,10 @@ namespace MicroMapper
         public void Execute()
         {
             // get a list of properties from the source object
-            var bindingFlags = BindingFlags.Public | BindingFlags.Instance;
-
-            if (!_options.MapOnlyPublicPropertiesFromSource)
-            {
-                bindingFlags = bindingFlags | BindingFlags.NonPublic;
-            }
-
-            var sourceProperties = _source.GetType().GetTypeInfo().GetProperties(bindingFlags);
+            var sourceProperties = GetSourceProperties();
 
             // get a list of properties from the destination object
-            var destinationProperties = _destination.GetType().GetTypeInfo().GetProperties();
+            var destinationProperties = GetDestinationProperties();
 
             // filter out any destination properties that should be ignored
             destinationProperties = destinationProperties.Where(p => !_options.IgnoredProperties.Contains(p.Name)).ToArray();
@@ -59,12 +52,6 @@ namespace MicroMapper
             return this;
         }
 
-        public Mapper<TSource, TDestination> MapOnlyPublicPropertiesFromSource()
-        {
-            _options.MapOnlyPublicPropertiesFromSource = true;
-            return this;
-        }
-
         public Mapper<TSource, TDestination> MapProperty<TPropertyType>(Expression<Func<TDestination, TPropertyType>> destinationProperty, Expression<Func<TSource, TPropertyType>> valueExpression)
         {
             // we need to capture the destination property that this is for and the expression to run to get the value
@@ -77,6 +64,30 @@ namespace MicroMapper
             _options.PropertyMaps.Add(destinationPropertyName, destinationValue);
 
             return this;
+        }
+
+        public Mapper<TSource, TDestination> ReadOnlyPublicPropertiesFromSource()
+        {
+            _options.ReadOnlyPublicPropertiesFromSource = true;
+            return this;
+        }
+
+        public Mapper<TSource, TDestination> WriteOnlyPublicPropertiesOnDestination()
+        {
+            _options.WriteOnlyPublicPropertiesOnDestination = true;
+            return this;
+        }
+
+        private PropertyInfo[] GetDestinationProperties()
+        {
+            var bindingFlags = BindingFlags.Public | BindingFlags.Instance;
+
+            if (!_options.WriteOnlyPublicPropertiesOnDestination)
+            {
+                bindingFlags = bindingFlags | BindingFlags.NonPublic;
+            }
+
+            return _destination.GetType().GetTypeInfo().GetProperties(bindingFlags);
         }
 
         private string GetPropertyName<TPropertyType>(Expression<Func<TDestination, TPropertyType>> propertyLambda)
@@ -98,11 +109,24 @@ namespace MicroMapper
             return propInfo.Name;
         }
 
+        private PropertyInfo[] GetSourceProperties()
+        {
+            var bindingFlags = BindingFlags.Public | BindingFlags.Instance;
+
+            if (!_options.ReadOnlyPublicPropertiesFromSource)
+            {
+                bindingFlags = bindingFlags | BindingFlags.NonPublic;
+            }
+
+            return _source.GetType().GetTypeInfo().GetProperties(bindingFlags);
+        }
+
         private class MapperOptions
         {
             internal List<string> IgnoredProperties { get; set; }
-            internal bool MapOnlyPublicPropertiesFromSource { get; set; }
             internal Dictionary<string, object> PropertyMaps { get; set; }
+            internal bool ReadOnlyPublicPropertiesFromSource { get; set; }
+            internal bool WriteOnlyPublicPropertiesOnDestination { get; set; }
 
             public MapperOptions()
             {
